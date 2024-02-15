@@ -2,6 +2,7 @@
 #define LONGMATH_LONGNUMBER_H
 
 #include <vector>
+#include <compare>
 
 namespace LongMath {
     class LongNumber {
@@ -24,6 +25,15 @@ namespace LongMath {
         int magnitude() const;
 
         LongNumber operator-() const;
+
+        friend bool operator==(const LongNumber &, const LongNumber &);
+        friend bool operator<(const LongNumber &, const LongNumber &);
+        friend std::strong_ordering operator<=>(const LongNumber &, const LongNumber &);
+
+        friend LongNumber operator-(const LongNumber &, const LongNumber &);
+        friend LongNumber operator+(const LongNumber &, const LongNumber &);
+        friend LongNumber operator*(const LongNumber &, const LongNumber &);
+        friend LongNumber operator/(const LongNumber &, const LongNumber &);
     };
 
 }
