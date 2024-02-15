@@ -34,6 +34,11 @@ namespace LongMath {
         friend LongNumber operator+(const LongNumber &, const LongNumber &);
         friend LongNumber operator*(const LongNumber &, const LongNumber &);
         friend LongNumber operator/(const LongNumber &, const LongNumber &);
+
+        LongNumber operator-=(const LongNumber &);
+        LongNumber operator+=(const LongNumber &);
+        LongNumber operator*=(const LongNumber &);
+        LongNumber operator/=(const LongNumber &);
     };
 
 }

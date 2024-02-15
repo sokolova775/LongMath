@@ -1,6 +1,7 @@
 #include "LongNumber.h"
 #include <vector>
 #include <sstream>
+#include <iostream>
 
 namespace LongMath {
     LongNumber::LongNumber() {
@@ -99,7 +100,7 @@ namespace LongMath {
         return number + '0';
     }
 
-    LongNumber operator ""_bf(unsigned long long number) {
+    LongNumber operator ""_ln(unsigned long long number) {
         return LongNumber(number);
     }
 
@@ -108,7 +109,7 @@ namespace LongMath {
     }
 
     LongNumber LongNumber::operator-() const {
-        auto inverse(*this);
+        LongNumber inverse(*this);
         inverse.sign = !sign;
         return inverse;
     }
@@ -144,8 +145,16 @@ namespace LongMath {
 
         if (y.magnitude() != x.magnitude()) return x.magnitude() < y.magnitude();
 
-        for (int i = x.digits.size() - 1; i >= 0; ++i)
-            if (x.digits[i] != y.digits[i]) return x.digits[i] < y.digits[i];
+
+        int i = x.digits.size() - 1;
+        int j = y.digits.size() - 1;
+        while (i >= 0 && j >= 0) {
+            if (x.digits[i] != y.digits[j]) {
+                return x.digits[i] < y.digits[j];
+            }
+            --i;
+            --j;
+        }
 
         return x.point < y.point;
     }
@@ -174,11 +183,14 @@ namespace LongMath {
         } else {
             a = y;
             b = x;
+            precision_diff = -precision_diff;
         }
 
-        auto carry = 0;
-        for (auto i = 0; i < a.digits.size() || carry != 0; ++i) {
-            auto j = i + precision_diff;
+
+        short carry = 0;
+        int j;
+        for (auto i = 0; i < b.digits.size() || carry != 0; ++i) {
+            j = i + precision_diff;
 
             if (j == a.digits.size()) {
                 a.digits.push_back(b.digits[i] + carry);
@@ -200,6 +212,10 @@ namespace LongMath {
         return a;
     }
 
+    LongNumber LongNumber::operator+=(const LongNumber &other) {
+        return *this = *this + other;
+    }
+
     LongNumber operator-(const LongNumber &x, const LongNumber &y) {
 
 
@@ -214,8 +230,8 @@ namespace LongMath {
             b.digits.insert(b.digits.begin(), precisionDiff, 0);
         } else if (precisionDiff != 0) {
             a.digits.insert(a.digits.begin(), -precisionDiff, 0);
+            a.point -= precisionDiff;
         }
-
 
         short carry = 0;
         for (auto i = 0; i < a.digits.size() || carry != 0; ++i) {
@@ -237,4 +253,96 @@ namespace LongMath {
 
         return a;
     }
+
+    LongNumber LongNumber::operator-=(const LongNumber &other) {
+        return *this = *this - other;
+    }
+
+    LongNumber operator*(const LongNumber &x, const LongNumber &y) {
+        if (x.isZero() || y.isZero()) return 0_ln;
+
+        LongNumber c = 0_ln;
+        c.sign = (x.sign != y.sign);
+        c.point = x.point + y.point;
+
+        short carry;
+        for (auto i = 0; i <= x.digits.size(); ++i) {
+            carry = 0;
+            for (auto j = 0; j <= y.digits.size() || carry != 0; ++j) {
+                if (i + j >= c.digits.size()) {
+                    c.digits.push_back(0);
+                }
+                auto n = c.digits[i + j] + x.digits[i] * y.digits[j] + carry;
+
+                c.digits[i + j] = n % 10;
+
+                carry = n / 10;
+            }
+        }
+
+        c.deleteZeros();
+
+        return c;
+    }
+
+    LongNumber LongNumber::operator*=(const LongNumber &other) {
+        return *this = *this * other;
+    }
+
+    LongNumber operator/(const LongNumber &x, const LongNumber &y) {
+        LongNumber a{x}, b{y};
+
+        if (b.isZero()) throw std::overflow_error("division by 0");
+
+        LongNumber c = 0_ln;
+
+        c.sign = (a.sign != b.sign);
+        a.sign = false;
+        b.sign = false;
+
+        if (b >= a) {
+            c.digits.pop_back();
+        }
+
+        int precision = fmax(10, fmax(a.point, b.point));
+        int magnitude = a.magnitude() - b.magnitude();
+
+        while (a.digits.back() == 0 && b.digits.back() == 0) {
+            a.digits.pop_back();
+            b.digits.pop_back();
+        }
+
+
+        LongNumber bd;
+        short digit;
+        while (!a.isZero() && c.digits.size() <= precision + magnitude) {
+            if (a < b) {
+                c.digits.insert(c.digits.begin(), 0);
+                a *= 10_ln;
+            }
+
+            digit = 1;
+            bd = b;
+            while (bd + b <= a && digit < 9) {
+                std::cout << digit << ':' << bd << ' ' << b << std::endl;
+                bd += b;
+                digit++;
+            }
+
+            c.digits.insert(c.digits.begin(), digit);
+            a -= bd;
+            a *= 10_ln;
+
+        }
+
+        c.point = precision;
+        c.deleteZeros();
+
+        return c;
+    }
+
+    LongNumber LongNumber::operator/=(const LongNumber &other) {
+        return *this = *this / other;
+    }
 }
+
