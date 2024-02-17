@@ -8,11 +8,33 @@ namespace LongMath {
         sign = false;
         point = 0;
         digits.push_back(0);
+        precision = 100;
     }
 
     LongNumber::LongNumber(int input) {
         point = 0;
+        precision = 100;
+        sign = false;
 
+        if (input == 0) {
+            digits.push_back(0);
+            return;
+        }
+
+        if (input < 0) {
+            sign = true;
+            input = -input;
+        }
+
+        while (input > 0) {
+            digits.push_back(input % 10);
+            input /= 10;
+        }
+    }
+
+    LongNumber::LongNumber(int input, int _precision) {
+        point = 0;
+        precision = _precision;
         sign = false;
 
         if (input == 0) {
@@ -32,6 +54,8 @@ namespace LongMath {
     }
 
     LongNumber::LongNumber(std::string input) {
+
+
         if (input[0] == '-') {
             sign = true;
             input.erase(input.begin());
@@ -54,11 +78,15 @@ namespace LongMath {
             }
         }
 
+        precision = fmax(100, point + 10);
+
         auto iter = input.end();
         while (iter != input.begin()) {
             iter--;
             digits.push_back(*iter - '0');
         }
+
+
 
         deleteZeros();
     }
@@ -68,7 +96,13 @@ namespace LongMath {
     }
 
     int LongNumber::magnitude() const {
-        return digits.size() - point;
+        int magnitude = digits.size() - point;
+        auto iterator = digits.end() - 1;
+        while (iterator >= digits.begin() && *iterator == 0){
+            magnitude--;
+            iterator--;
+        }
+        return magnitude;
     }
 
     void LongNumber::deleteZeros() {
@@ -97,12 +131,13 @@ namespace LongMath {
             }
         }
 
-        return number + '0';
+        if(point == 0)
+            number += '0';
+
+        return number;
     }
 
-    LongNumber operator ""_ln(unsigned long long number) {
-        return LongNumber(number);
-    }
+
 
     std::ostream &operator<<(std::ostream &os, const LongNumber &number) {
         return os << number.toString();
@@ -125,14 +160,18 @@ namespace LongMath {
         return true;
     }
 
+    bool operator!=(const LongNumber &x, const LongNumber &y) {
+        return !(y == x);
+    }
+
     bool operator<(const LongNumber &x, const LongNumber &y) {
         if (x.isZero()) {
             if (y.isZero()) {
                 return false;
             }
-            return y.sign;
+            return !y.sign;
         } else if (y.isZero()) {
-            return !x.sign;
+            return x.sign;
         }
 
         if (y.sign && x.sign) {
@@ -140,7 +179,7 @@ namespace LongMath {
         }
 
         if (y.sign != x.sign) {
-            return y.sign;
+            return !y.sign;
         }
 
         if (y.magnitude() != x.magnitude()) return x.magnitude() < y.magnitude();
@@ -159,14 +198,16 @@ namespace LongMath {
         return x.point < y.point;
     }
 
-    std::strong_ordering operator<=>(const LongNumber &x, const LongNumber &y) {
-        if (x == y) {
-            return std::strong_ordering::equal;
-        } else if (x < y) {
-            return std::strong_ordering::less;
-        }
-        return std::strong_ordering::greater;
+    bool operator>(const LongNumber &x, const LongNumber &y) {
+        return y < x;
+    }
 
+    bool operator<=(const LongNumber &x, const LongNumber &y) {
+        return x < y || x == y;
+    }
+
+    bool operator>=(const LongNumber &x, const LongNumber &y) {
+        return x > y || x == y;
     }
 
     LongNumber operator+(const LongNumber &x, const LongNumber &y) {
@@ -266,9 +307,9 @@ namespace LongMath {
         c.point = x.point + y.point;
 
         short carry;
-        for (auto i = 0; i <= x.digits.size(); ++i) {
+        for (auto i = 0; i < x.digits.size(); ++i) {
             carry = 0;
-            for (auto j = 0; j <= y.digits.size() || carry != 0; ++j) {
+            for (auto j = 0; j < y.digits.size() || carry != 0; ++j) {
                 if (i + j >= c.digits.size()) {
                     c.digits.push_back(0);
                 }
@@ -290,33 +331,31 @@ namespace LongMath {
     }
 
     LongNumber operator/(const LongNumber &x, const LongNumber &y) {
+        if (y.isZero()) {
+            throw std::overflow_error("division by 0");
+        }
+
         LongNumber a{x}, b{y};
 
-        if (b.isZero()) throw std::overflow_error("division by 0");
-
-        LongNumber c = 0_ln;
+        LongNumber c = LongNumber();
+        c.digits.pop_back();
 
         c.sign = (a.sign != b.sign);
         a.sign = false;
         b.sign = false;
 
-        if (b >= a) {
-            c.digits.pop_back();
+        int magnitude = a.magnitude() - b.magnitude() + 1;
+        while(b.magnitude() < a.magnitude()){
+            b *= 10_ln;
         }
 
-        int precision = fmax(10, fmax(a.point, b.point));
-        int magnitude = a.magnitude() - b.magnitude();
-
-        while (a.digits.back() == 0 && b.digits.back() == 0) {
-            a.digits.pop_back();
-            b.digits.pop_back();
-        }
-
+        int precision = fmax(a.precision, b.precision);
 
         LongNumber bd;
         short digit;
-        while (!a.isZero() && c.digits.size() <= precision + magnitude) {
-            if (a < b) {
+        int size = magnitude > 0 ? precision + magnitude : precision + 1;
+        while (!a.isZero() && c.digits.size() <= size) {
+            while (a < b) {
                 c.digits.insert(c.digits.begin(), 0);
                 a *= 10_ln;
             }
@@ -324,7 +363,6 @@ namespace LongMath {
             digit = 1;
             bd = b;
             while (bd + b <= a && digit < 9) {
-                std::cout << digit << ':' << bd << ' ' << b << std::endl;
                 bd += b;
                 digit++;
             }
@@ -332,12 +370,18 @@ namespace LongMath {
             c.digits.insert(c.digits.begin(), digit);
             a -= bd;
             a *= 10_ln;
-
         }
 
-        c.point = precision;
-        c.deleteZeros();
+        if (magnitude <= 0){
+            c.point = c.digits.size() - 1;
+        } else {
+            c.digits.insert(c.digits.cbegin(), magnitude, 0);
+            c.point = c.digits.size() - magnitude;
+        }
 
+        c.precision = precision;
+
+        c.deleteZeros();
         return c;
     }
 
@@ -346,3 +390,9 @@ namespace LongMath {
     }
 }
 
+LongMath::LongNumber operator ""_ln(unsigned long long number) {
+    return LongMath::LongNumber(number);
+}
+LongMath::LongNumber operator ""_ln(long double number) {
+    return LongMath::LongNumber(std::to_string(number));
+}
