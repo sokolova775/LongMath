@@ -1,13 +1,12 @@
 #include <iostream>
-#include"LongNumber/LongNumber.h"
+#include"LongNumber.h"
+#include "pi.h"
 
 int main() {
-    auto a = LongMath::LongNumber(143);
-    auto d = LongMath::LongNumber(12);
-    auto b = LongMath::LongNumber("-100000000");
-    auto c = LongMath::LongNumber("12345.5126456125");
-    std::cout << b << std::endl;
-     std::cout << (c/b) << std::endl;
-    std::cout << c << std::endl;
+    int  n;
+    std::cout << "введите точность: ";
+    std::cin >> n;
+    auto _pi = PI::pi(n);
+    std::cout << (_pi.toString(n) == PI::PI.toString(n)) << std::endl;
     return 0;
 }

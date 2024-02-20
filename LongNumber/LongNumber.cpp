@@ -54,8 +54,6 @@ namespace LongMath {
     }
 
     LongNumber::LongNumber(std::string input) {
-
-
         if (input[0] == '-') {
             sign = true;
             input.erase(input.begin());
@@ -86,8 +84,6 @@ namespace LongMath {
             digits.push_back(*iter - '0');
         }
 
-
-
         deleteZeros();
     }
 
@@ -106,7 +102,6 @@ namespace LongMath {
     }
 
     void LongNumber::deleteZeros() {
-
         while (point > 0 && digits.front() == 0) {
             digits.erase(digits.begin());
             --point;
@@ -129,6 +124,27 @@ namespace LongMath {
             if (i == point) {
                 number += '.';
             }
+        }
+
+        if(point == 0)
+            number += '0';
+
+        return number;
+    }
+
+    std::string LongNumber::toString(int accuracy) const {
+        std::string number;
+
+        if (sign) number += '-';
+
+        for (int i = digits.size() - 1; i >= 0 && i >= point - accuracy; --i) {
+
+            number += static_cast<char>(digits[i] + '0');
+
+            if (i == point) {
+                number += '.';
+            }
+
         }
 
         if(point == 0)
@@ -184,7 +200,6 @@ namespace LongMath {
 
         if (y.magnitude() != x.magnitude()) return x.magnitude() < y.magnitude();
 
-
         int i = x.digits.size() - 1;
         int j = y.digits.size() - 1;
         while (i >= 0 && j >= 0) {
@@ -228,15 +243,25 @@ namespace LongMath {
         }
 
 
+
         short carry = 0;
         int j;
         for (auto i = 0; i < b.digits.size() || carry != 0; ++i) {
             j = i + precision_diff;
 
             if (j == a.digits.size()) {
-                a.digits.push_back(b.digits[i] + carry);
+                if (i < b.digits.size()){
+                    a.digits.push_back(b.digits[i] + carry);
+                } else{
+                    a.digits.push_back(carry);
+                }
+
             } else {
-                a.digits[j] += b.digits[i] + carry;
+                if (i < b.digits.size()){
+                    a.digits[j] += b.digits[i] + carry;
+                } else{
+                    a.digits[j] += carry;
+                }
             }
 
             if (a.digits[j] >= 10) {
@@ -345,9 +370,11 @@ namespace LongMath {
         b.sign = false;
 
         int magnitude = a.magnitude() - b.magnitude() + 1;
+
         while(b.magnitude() < a.magnitude()){
             b *= 10_ln;
         }
+
 
         int precision = fmax(a.precision, b.precision);
 

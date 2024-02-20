@@ -10,12 +10,10 @@ add_executable(main main.cpp)
 include_directories(LongNumber)
 add_subdirectory(LongNumber)
 
-
-
 add_library(Pi STATIC pi.cpp pi.h)
 
 target_link_libraries(main LongNumber)
-#target_link_libraries(main Pi)
+target_link_libraries(main Pi)
 
 include(FetchContent)
 FetchContent_Declare(
