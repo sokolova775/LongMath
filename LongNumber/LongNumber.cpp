@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 
+
 namespace LongMath {
     LongNumber::LongNumber() {
         sign = false;
@@ -148,7 +149,7 @@ namespace LongMath {
 
         }
 
-        if(point == 0 || accuracy == 0)
+        if(point == 0)
             number += '0';
 
         return number;
