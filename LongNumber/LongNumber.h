@@ -14,6 +14,10 @@ namespace LongMath {
 
         void deleteZeros();
 
+        bool isZero() const;
+
+        int magnitude() const;
+
 
     public:
         LongNumber();
@@ -25,13 +29,10 @@ namespace LongMath {
         LongNumber(int, int);
 
         std::string toString() const;
+
         std::string toString(int) const;
 
         friend std::ostream &operator<<(std::ostream &, const LongNumber &);
-
-        bool isZero() const;
-
-        int magnitude() const;
 
         LongNumber operator-() const;
 
@@ -55,13 +56,13 @@ namespace LongMath {
 
         friend LongNumber operator/(const LongNumber &, const LongNumber &);
 
-        LongNumber operator-=(const LongNumber &);
+        LongNumber &operator-=(const LongNumber &);
 
-        LongNumber operator+=(const LongNumber &);
+        LongNumber &operator+=(const LongNumber &);
 
-        LongNumber operator*=(const LongNumber &);
+        LongNumber &operator*=(const LongNumber &);
 
-        LongNumber operator/=(const LongNumber &);
+        LongNumber &operator/=(const LongNumber &);
     };
 }
 

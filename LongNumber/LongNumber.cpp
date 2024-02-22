@@ -2,6 +2,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <cmath>
 
 namespace LongMath {
     LongNumber::LongNumber() {
@@ -147,7 +148,7 @@ namespace LongMath {
 
         }
 
-        if(point == 0)
+        if(point == 0 || accuracy == 0)
             number += '0';
 
         return number;
@@ -278,7 +279,7 @@ namespace LongMath {
         return a;
     }
 
-    LongNumber LongNumber::operator+=(const LongNumber &other) {
+    LongNumber& LongNumber::operator+=(const LongNumber &other) {
         return *this = *this + other;
     }
 
@@ -320,7 +321,7 @@ namespace LongMath {
         return a;
     }
 
-    LongNumber LongNumber::operator-=(const LongNumber &other) {
+    LongNumber& LongNumber::operator-=(const LongNumber &other) {
         return *this = *this - other;
     }
 
@@ -351,7 +352,7 @@ namespace LongMath {
         return c;
     }
 
-    LongNumber LongNumber::operator*=(const LongNumber &other) {
+    LongNumber& LongNumber::operator*=(const LongNumber &other) {
         return *this = *this * other;
     }
 
@@ -412,7 +413,7 @@ namespace LongMath {
         return c;
     }
 
-    LongNumber LongNumber::operator/=(const LongNumber &other) {
+    LongNumber& LongNumber::operator/=(const LongNumber &other) {
         return *this = *this / other;
     }
 }

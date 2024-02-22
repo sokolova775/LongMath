@@ -1,6 +1,5 @@
 #include "pi.h"
 #include "gtest/gtest.h"
-#include "time.h"
 
 TEST(PI, PI100){
     clock_t start, finish;
