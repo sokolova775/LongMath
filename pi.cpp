@@ -1,5 +1,4 @@
 #include "LongNumber.h"
-#include "string"
 #include "iostream"
 
 namespace PI {
@@ -19,7 +18,11 @@ namespace PI {
         LongMath::LongNumber c = 5_ln;
         LongMath::LongNumber d = 6_ln;
 
-        for (auto k = 0; k <= precision; ++k) {
+        if (precision == 0) {
+            pi += 3_ln;
+        }
+
+        for (auto k = 0; k < precision; ++k) {
             pi += n0*(a0 / a - b0 / b - c0 / c - d0 / d);
             n0 /= n;
             a += 8_ln;
